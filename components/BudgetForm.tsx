@@ -15,7 +15,7 @@ const CATEGORIES: { id: Category; label: string; emoji: string }[] = [
 ]
 
 interface Props {
-  onAdd: (expense: Omit<Expense, 'id' | 'created_at'>) => Promise<void>
+  onAdd: (expense: Omit<Expense, 'id' | 'created_at'>) => Promise<boolean>
 }
 
 export default function BudgetForm({ onAdd }: Props) {
@@ -29,10 +29,15 @@ export default function BudgetForm({ onAdd }: Props) {
     const parsed = parseFloat(amount)
     if (!parsed || parsed <= 0) return
     setLoading(true)
-    await onAdd({ category, amount: parsed, note })
-    setAmount('')
-    setNote('')
-    setLoading(false)
+    try {
+      const saved = await onAdd({ category, amount: parsed, note })
+      if (saved) {
+        setAmount('')
+        setNote('')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -65,7 +70,7 @@ export default function BudgetForm({ onAdd }: Props) {
 
         <div>
           <label className="block text-[11px] uppercase tracking-widest font-medium text-muted mb-1.5">
-            Amount (€)
+            Amount (DKK)
           </label>
           <input
             type="number"

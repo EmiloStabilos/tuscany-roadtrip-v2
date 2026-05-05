@@ -22,8 +22,8 @@ interface Props {
   stops: Stop[]
   highlightedStopId: string | null
   onHover: (id: string | null) => void
-  onDelete: (id: string) => Promise<void>
-  onAdd: (stop: Omit<Stop, 'id' | 'created_at'>) => Promise<void>
+  onDelete: (id: string) => Promise<boolean>
+  onAdd: (stop: Omit<Stop, 'id' | 'created_at'>) => Promise<boolean>
 }
 
 function XIcon() {
@@ -78,8 +78,9 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
 
   const handleSelect = async (result: GeoResult) => {
     const name = result.display_name.split(',')[0].trim()
-    await onAdd({
-      position: stops.length + 1,
+    const nextPosition = stops.reduce((max, stop) => Math.max(max, stop.position), 0) + 1
+    const saved = await onAdd({
+      position: nextPosition,
       name,
       note: '',
       type: 'city',
@@ -87,6 +88,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
       lng: parseFloat(result.lon),
       google_maps_url: null,
     })
+    if (!saved) return
     setAdding(false)
     setQuery('')
     setResults([])

@@ -13,7 +13,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Tuscany — July 2025',
+  title: 'Tuscany — July 2026',
   description: 'Road trip planner',
 }
 

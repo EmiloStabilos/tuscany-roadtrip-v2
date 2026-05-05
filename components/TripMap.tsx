@@ -24,21 +24,28 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
   useEffect(() => {
     if (stops.length < 2) { setRoadRoute([]); return }
 
+    const controller = new AbortController()
     const coords = stops.map((s) => `${s.lng},${s.lat}`).join(';')
     fetch(
-      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
+      { signal: controller.signal }
     )
       .then((r) => r.json())
       .then((data) => {
         const coords = data?.routes?.[0]?.geometry?.coordinates
         if (coords) {
           setRoadRoute(coords.map(([lng, lat]: [number, number]) => [lat, lng]))
+        } else {
+          setRoadRoute(stops.map((s) => [s.lat, s.lng]))
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
         // fall back to straight lines if OSRM is unavailable
         setRoadRoute(stops.map((s) => [s.lat, s.lng]))
       })
+
+    return () => controller.abort()
   }, [stops])
 
   const fallbackRoute = stops.map((s) => [s.lat, s.lng] as [number, number])

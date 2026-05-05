@@ -13,6 +13,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const CATEGORY_ORDER = ['lodging', 'food', 'wine', 'transport', 'activities', 'misc']
+const CURRENCY = 'DKK'
 
 function XIcon() {
   return (
@@ -25,8 +26,8 @@ function XIcon() {
 interface Props {
   expenses: Expense[]
   budgetTotal: number
-  onDelete: (id: string) => Promise<void>
-  onUpdateBudget: (total: number) => Promise<void>
+  onDelete: (id: string) => Promise<boolean>
+  onUpdateBudget: (total: number) => Promise<boolean>
 }
 
 export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdateBudget }: Props) {
@@ -54,8 +55,12 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
 
   const handleBudgetSave = async () => {
     const val = parseFloat(budgetInput.replace(',', '.'))
-    if (!isNaN(val) && val > 0) await onUpdateBudget(val)
-    setEditingBudget(false)
+    if (isNaN(val) || val <= 0) {
+      setEditingBudget(false)
+      return
+    }
+    const saved = await onUpdateBudget(val)
+    if (saved) setEditingBudget(false)
   }
 
   return (
@@ -65,11 +70,14 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
         <p className="text-[11px] uppercase tracking-widest font-medium text-muted mb-1">Remaining</p>
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className={`font-playfair text-5xl font-bold ${remaining < 0 ? 'text-terracotta' : 'text-ink'}`}>
-            €{fmt(remaining)}
+            <span className="align-baseline font-sans text-sm font-semibold uppercase tracking-widest text-muted mr-1.5">
+              {CURRENCY}
+            </span>
+            {fmt(remaining)}
           </span>
           {editingBudget ? (
             <div className="flex items-center gap-1">
-              <span className="text-muted text-sm">of €</span>
+              <span className="text-muted text-sm">of {CURRENCY}</span>
               <input
                 autoFocus
                 type="number"
@@ -86,7 +94,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
               className="text-muted text-sm hover:text-ink transition-colors"
               title="Click to edit budget"
             >
-              of €{fmt(budgetTotal)}
+              of {CURRENCY} {fmt(budgetTotal)}
             </button>
           )}
         </div>
@@ -99,7 +107,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
           />
         </div>
         <div className="flex justify-between mt-1.5">
-          <span className="text-xs text-muted">€{fmt(totalSpent)} spent</span>
+          <span className="text-xs text-muted">{CURRENCY} {fmt(totalSpent)} spent</span>
           <span className="text-xs text-muted">{Math.round(pct * 100)}%</span>
         </div>
       </div>
@@ -121,7 +129,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
                   <span className="text-[11px] font-medium text-muted uppercase tracking-widest">
                     {CATEGORY_LABELS[category]}
                   </span>
-                  <span className="text-xs font-semibold text-ink">€{fmt(catTotal)}</span>
+                  <span className="text-xs font-semibold text-ink">{CURRENCY} {fmt(catTotal)}</span>
                 </div>
                 <div className="space-y-0.5">
                   {items.map((expense) => (
@@ -135,7 +143,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
                         </span>
                       </div>
                       <span className="text-sm font-medium text-ink shrink-0 tabular-nums">
-                        €{fmtDecimal(expense.amount)}
+                        {CURRENCY} {fmtDecimal(expense.amount)}
                       </span>
                       <button
                         onClick={() => onDelete(expense.id)}

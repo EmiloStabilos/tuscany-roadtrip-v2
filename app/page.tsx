@@ -20,6 +20,7 @@ export default function Page() {
   const [budgetTotal, setBudgetTotal] = useState(5000)
   const [highlightedStopId, setHighlightedStopId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -35,37 +36,51 @@ export default function Page() {
 
   const withSave = async (fn: () => Promise<void>) => {
     setSaving(true)
-    await fn()
-    setSaving(false)
+    setSaveError(null)
+    try {
+      await fn()
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to save changes'
+      setSaveError(message)
+      return false
+    } finally {
+      setSaving(false)
+    }
   }
 
   const addStop = (stop: Omit<Stop, 'id' | 'created_at'>) =>
     withSave(async () => {
-      const { data } = await supabase.from('stops').insert(stop).select().single()
+      const { data, error } = await supabase.from('stops').insert(stop).select().single()
+      if (error) throw error
       if (data) setStops((prev) => [...prev, data as Stop].sort((a, b) => a.position - b.position))
     })
 
   const deleteStop = (id: string) =>
     withSave(async () => {
-      await supabase.from('stops').delete().eq('id', id)
+      const { error } = await supabase.from('stops').delete().eq('id', id)
+      if (error) throw error
       setStops((prev) => prev.filter((s) => s.id !== id))
     })
 
   const addExpense = (expense: Omit<Expense, 'id' | 'created_at'>) =>
     withSave(async () => {
-      const { data } = await supabase.from('expenses').insert(expense).select().single()
+      const { data, error } = await supabase.from('expenses').insert(expense).select().single()
+      if (error) throw error
       if (data) setExpenses((prev) => [...prev, data as Expense])
     })
 
   const deleteExpense = (id: string) =>
     withSave(async () => {
-      await supabase.from('expenses').delete().eq('id', id)
+      const { error } = await supabase.from('expenses').delete().eq('id', id)
+      if (error) throw error
       setExpenses((prev) => prev.filter((e) => e.id !== id))
     })
 
   const updateBudget = (total: number) =>
     withSave(async () => {
-      await supabase.from('config').update({ budget_total: total }).eq('id', 1)
+      const { error } = await supabase.from('config').update({ budget_total: total }).eq('id', 1)
+      if (error) throw error
       setBudgetTotal(total)
     })
 
@@ -79,7 +94,7 @@ export default function Page() {
               Tuscany
             </h1>
             <p className="text-muted text-[10px] tracking-[0.12em] uppercase mt-0.5">
-              6 – 12 July 2025
+              6 – 12 July 2026
             </p>
           </div>
 
@@ -100,7 +115,7 @@ export default function Page() {
             ))}
           </nav>
 
-          <SyncStatus saving={saving} />
+          <SyncStatus saving={saving} error={saveError} />
         </div>
       </header>
 
