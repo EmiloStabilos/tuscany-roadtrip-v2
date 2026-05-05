@@ -1,6 +1,7 @@
 'use client'
 
 import 'leaflet/dist/leaflet.css'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline } from 'react-leaflet'
 import type { Stop } from '@/lib/supabase'
 
@@ -18,7 +19,30 @@ interface Props {
 }
 
 export default function TripMap({ stops, highlightedStopId }: Props) {
-  const routePoints = stops.map((s) => [s.lat, s.lng] as [number, number])
+  const [roadRoute, setRoadRoute] = useState<[number, number][]>([])
+
+  useEffect(() => {
+    if (stops.length < 2) { setRoadRoute([]); return }
+
+    const coords = stops.map((s) => `${s.lng},${s.lat}`).join(';')
+    fetch(
+      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        const coords = data?.routes?.[0]?.geometry?.coordinates
+        if (coords) {
+          setRoadRoute(coords.map(([lng, lat]: [number, number]) => [lat, lng]))
+        }
+      })
+      .catch(() => {
+        // fall back to straight lines if OSRM is unavailable
+        setRoadRoute(stops.map((s) => [s.lat, s.lng]))
+      })
+  }, [stops])
+
+  const fallbackRoute = stops.map((s) => [s.lat, s.lng] as [number, number])
+  const displayRoute = roadRoute.length > 0 ? roadRoute : fallbackRoute
 
   return (
     <div className="w-full h-full" style={{ filter: 'sepia(12%) saturate(85%) brightness(1.01)' }}>
@@ -35,10 +59,15 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
           maxZoom={19}
         />
 
-        {routePoints.length > 1 && (
+        {displayRoute.length > 1 && (
           <Polyline
-            positions={routePoints}
-            pathOptions={{ color: '#6b2737', weight: 2, opacity: 0.45, dashArray: '5 7' }}
+            positions={displayRoute}
+            pathOptions={{
+              color: '#6b2737',
+              weight: roadRoute.length > 0 ? 2.5 : 2,
+              opacity: 0.55,
+              dashArray: roadRoute.length > 0 ? undefined : '5 7',
+            }}
           />
         )}
 

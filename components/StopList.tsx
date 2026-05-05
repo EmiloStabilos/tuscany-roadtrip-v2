@@ -34,6 +34,15 @@ function XIcon() {
   )
 }
 
+function MapPinIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="currentColor" opacity="0.85"/>
+      <circle cx="12" cy="9" r="2.5" fill="white"/>
+    </svg>
+  )
+}
+
 function PlusIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -76,6 +85,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
       type: 'city',
       lat: parseFloat(result.lat),
       lng: parseFloat(result.lon),
+      google_maps_url: null,
     })
     setAdding(false)
     setQuery('')
@@ -113,13 +123,27 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
               <p className="text-muted text-xs mt-0.5 leading-relaxed">{stop.note}</p>
             )}
           </div>
-          <button
-            onClick={() => onDelete(stop.id)}
-            className="mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-terracotta"
-            aria-label={`Remove ${stop.name}`}
-          >
-            <XIcon />
-          </button>
+          <div className="flex items-center gap-1.5 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            {stop.google_maps_url && (
+              <a
+                href={stop.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted hover:text-olive transition-colors"
+                aria-label={`Open ${stop.name} in Google Maps`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MapPinIcon />
+              </a>
+            )}
+            <button
+              onClick={() => onDelete(stop.id)}
+              className="text-muted hover:text-terracotta transition-colors"
+              aria-label={`Remove ${stop.name}`}
+            >
+              <XIcon />
+            </button>
+          </div>
         </div>
       ))}
 

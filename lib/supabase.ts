@@ -13,6 +13,7 @@ export type Stop = {
   type: 'city' | 'accommodation' | 'sight' | 'beach' | 'winery'
   lat: number
   lng: number
+  google_maps_url: string | null
   created_at: string
 }
 
