@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import type { Stop, Expense } from '@/lib/supabase'
 import StopList from '@/components/StopList'
@@ -11,7 +11,7 @@ import BudgetForm from '@/components/BudgetForm'
 import BudgetSummary from '@/components/BudgetSummary'
 import SyncStatus from '@/components/SyncStatus'
 
-const TripMap = dynamic(() => import('@/components/TripMap'), { ssr: false })
+const TripMap = dynamicImport(() => import('@/components/TripMap'), { ssr: false })
 
 type Tab = 'overview' | 'budget'
 
