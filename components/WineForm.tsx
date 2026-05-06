@@ -45,9 +45,9 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
     return 'empty'
   }
 
-  const resolveValue = (e: React.MouseEvent<HTMLButtonElement>, star: number) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    return e.clientX - rect.left < rect.width / 2 ? star - 0.5 : star
+  const resolveFromX = (clientX: number, el: HTMLElement, star: number) => {
+    const rect = el.getBoundingClientRect()
+    return clientX - rect.left < rect.width / 2 ? star - 0.5 : star
   }
 
   const display = hovered || value
@@ -58,9 +58,14 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
         <button
           key={star}
           type="button"
-          onMouseMove={(e) => setHovered(resolveValue(e, star))}
+          onMouseMove={(e) => setHovered(resolveFromX(e.clientX, e.currentTarget, star))}
           onMouseLeave={() => setHovered(0)}
-          onClick={(e) => onChange(resolveValue(e, star))}
+          onClick={(e) => onChange(resolveFromX(e.clientX, e.currentTarget, star))}
+          onTouchEnd={(e) => {
+            e.preventDefault()
+            const touch = e.changedTouches[0]
+            onChange(resolveFromX(touch.clientX, e.currentTarget, star))
+          }}
           className="text-2xl leading-none transition-transform hover:scale-110"
           aria-label={`${star} star${star > 1 ? 's' : ''}`}
         >
