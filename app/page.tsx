@@ -140,18 +140,32 @@ export default function Page() {
             ))}
           </nav>
 
-          {/* Clinking wine glasses — decorative, mobile only */}
-          <div className="md:hidden flex items-end gap-1 shrink-0" aria-hidden>
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#c85a3a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(-12deg)', transformOrigin: 'bottom center' }}>
-              <path d="M8 3h8c0 0 2 5 2 8 0 4-3 6-6 6s-6-2-6-6c0-3 2-8 2-8z"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-              <line x1="9" y1="21" x2="15" y2="21"/>
-            </svg>
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#c85a3a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(12deg)', transformOrigin: 'bottom center' }}>
-              <path d="M8 3h8c0 0 2 5 2 8 0 4-3 6-6 6s-6-2-6-6c0-3 2-8 2-8z"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-              <line x1="9" y1="21" x2="15" y2="21"/>
-            </svg>
+          {/* Wine glasses — decorative, mobile only */}
+          <div className="md:hidden flex items-end gap-2 shrink-0" aria-hidden>
+            {([-11, 11] as const).map((deg, i) => (
+              <svg
+                key={i}
+                viewBox="0 0 20 28"
+                className="w-5 h-7"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transform: `rotate(${deg}deg)`, transformOrigin: 'bottom center' }}
+              >
+                {/* Subtle wine fill */}
+                <path d="M4 2 C1 8 2 15 10 20 C18 15 19 8 16 2 Z" fill="#6b2737" fillOpacity="0.18" stroke="none" />
+                {/* Rim */}
+                <line x1="4" y1="2" x2="16" y2="2" stroke="#c85a3a" strokeWidth="1.4" />
+                {/* Left bowl */}
+                <path d="M4 2 C1 8 2 15 10 20" stroke="#c85a3a" strokeWidth="1.4" />
+                {/* Right bowl */}
+                <path d="M16 2 C19 8 18 15 10 20" stroke="#c85a3a" strokeWidth="1.4" />
+                {/* Stem */}
+                <line x1="10" y1="20" x2="10" y2="24" stroke="#c85a3a" strokeWidth="1.2" />
+                {/* Base */}
+                <line x1="5" y1="24" x2="15" y2="24" stroke="#c85a3a" strokeWidth="1.4" />
+              </svg>
+            ))}
           </div>
           <div className="hidden md:block">
             <SyncStatus saving={saving} error={saveError} />
