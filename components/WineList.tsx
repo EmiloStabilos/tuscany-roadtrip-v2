@@ -118,6 +118,27 @@ export default function WineList({ wines, onDelete }: Props) {
                 📍 {wine.location}
               </p>
             )}
+
+            {/* Quick lookup */}
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-warm-border">
+              <span className="text-[10px] uppercase tracking-widest text-muted/50 font-medium">Look up</span>
+              <a
+                href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([wine.name, wine.producer].filter(Boolean).join(' '))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium text-muted hover:text-terracotta transition-colors"
+              >
+                Vivino ↗
+              </a>
+              <a
+                href={`https://www.wine-searcher.com/find/${encodeURIComponent([wine.name, wine.producer].filter(Boolean).join('+'))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium text-muted hover:text-terracotta transition-colors"
+              >
+                Wine Searcher ↗
+              </a>
+            </div>
           </div>
         )
       })}
