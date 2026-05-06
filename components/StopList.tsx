@@ -65,7 +65,7 @@ function buildGroups(stops: Stop[]): StopGroup[] {
     if (stop.type === 'accommodation') {
       // Any stops we were tentatively collecting as "after" the previous
       // accommodation are actually en-route to this one — steal them back.
-      const stolen = current?.after ?? []
+      const stolen: Stop[] = current?.after ?? []
       if (current) current.after = []
 
       current = { dayLabel: stop.day_label, accommodation: stop, before: stolen, after: [] }
