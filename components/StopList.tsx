@@ -125,13 +125,13 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
               <p className="text-muted text-xs mt-0.5 leading-relaxed">{stop.note}</p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-3 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             {stop.google_maps_url && (
               <a
                 href={stop.google_maps_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted hover:text-olive transition-colors"
+                className="p-1.5 -m-1.5 text-muted hover:text-olive transition-colors"
                 aria-label={`Open ${stop.name} in Google Maps`}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -140,7 +140,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
             )}
             <button
               onClick={() => onDelete(stop.id)}
-              className="text-muted hover:text-terracotta transition-colors"
+              className="p-1.5 -m-1.5 text-muted hover:text-terracotta transition-colors"
               aria-label={`Remove ${stop.name}`}
             >
               <XIcon />
