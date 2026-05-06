@@ -108,7 +108,7 @@ export default function WineList({ wines, onDelete }: Props) {
             {/* Notes */}
             {wine.notes && (
               <p className="text-sm text-muted mt-2.5 leading-relaxed italic">
-                "{wine.notes}"
+                &ldquo;{wine.notes}&rdquo;
               </p>
             )}
 
