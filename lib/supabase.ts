@@ -29,6 +29,8 @@ export type Wine = {
   location: string | null
   created_at: string
 }
+
+export type Expense = {
   id: string
   category: 'lodging' | 'food' | 'wine' | 'transport' | 'activities' | 'misc'
   amount: number
