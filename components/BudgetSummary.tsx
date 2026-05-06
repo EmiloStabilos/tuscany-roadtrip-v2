@@ -147,7 +147,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
                       </span>
                       <button
                         onClick={() => onDelete(expense.id)}
-                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-terracotta"
+                        className="shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted hover:text-terracotta"
                         aria-label="Delete expense"
                       >
                         <XIcon />
