@@ -115,7 +115,20 @@ export default function Page() {
             ))}
           </nav>
 
-          <SyncStatus saving={saving} error={saveError} />
+          {/* Wine glasses — decorative, mobile only */}
+          <div className="md:hidden flex items-end gap-0.5 shrink-0" aria-hidden>
+            <svg width="18" height="26" viewBox="0 0 18 26" fill="none">
+              <path d="M4 1h10M3 1C3 1 1 6 1 9c0 3.5 2.5 5.5 5 6v7H4m10 0h-2.5m-5 0h7.5" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 8c1 2.5 3 4 7 4s6-1.5 7-4" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+            <svg width="18" height="26" viewBox="0 0 18 26" fill="none" style={{ transform: 'scaleX(-1)' }}>
+              <path d="M4 1h10M3 1C3 1 1 6 1 9c0 3.5 2.5 5.5 5 6v7H4m10 0h-2.5m-5 0h7.5" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 8c1 2.5 3 4 7 4s6-1.5 7-4" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="hidden md:block">
+            <SyncStatus saving={saving} error={saveError} />
+          </div>
         </div>
       </header>
 
