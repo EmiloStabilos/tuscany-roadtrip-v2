@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import dynamicImport from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
-import type { Stop, Expense } from '@/lib/supabase'
+import type { Expense } from '@/lib/supabase'
 import StopList from '@/components/StopList'
 import BudgetForm from '@/components/BudgetForm'
 import BudgetSummary from '@/components/BudgetSummary'
@@ -50,13 +50,6 @@ export default function Page() {
       setSaving(false)
     }
   }
-
-  const addStop = (stop: Omit<Stop, 'id' | 'created_at'>) =>
-    withSave(async () => {
-      const { data, error } = await supabase.from('stops').insert(stop).select().single()
-      if (error) throw error
-      if (data) setStops((prev) => [...prev, data as Stop].sort((a, b) => a.position - b.position))
-    })
 
   const deleteStop = (id: string) =>
     withSave(async () => {
@@ -155,7 +148,6 @@ export default function Page() {
               highlightedStopId={highlightedStopId}
               onHover={setHighlightedStopId}
               onDelete={deleteStop}
-              onAdd={addStop}
             />
           </>
         ) : (
