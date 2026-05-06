@@ -15,6 +15,32 @@ import SyncStatus from '@/components/SyncStatus'
 
 const TripMap = dynamicImport(() => import('@/components/TripMap'), { ssr: false })
 
+function WineGlass({ flip }: { flip?: boolean }) {
+  const gId = flip ? 'wg-r' : 'wg-l'
+  const cId = flip ? 'wc-r' : 'wc-l'
+  return (
+    <svg viewBox="0 0 13 20" width="13" height="20" fill="none" strokeLinecap="round" strokeLinejoin="round"
+      style={{ transform: `rotate(${flip ? 8 : -8}deg)`, transformOrigin: '50% 100%' }}>
+      <defs>
+        <linearGradient id={gId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6b2737" stopOpacity="0.04" />
+          <stop offset="100%" stopColor="#6b2737" stopOpacity="0.22" />
+        </linearGradient>
+        <clipPath id={cId}>
+          <path d="M2 2.5 C-0.5 6 0 11 2.5 13.5 C4 15 5.5 15.5 6.5 15.5 C7.5 15.5 9 15 10.5 13.5 C13 11 13.5 6 11 2.5 Z" />
+        </clipPath>
+      </defs>
+      <rect x="-2" y="0" width="17" height="17" fill={`url(#${gId})`} clipPath={`url(#${cId})`} />
+      <path d="M3.5 5 Q4.2 3.4 5.2 4.2" stroke="white" strokeOpacity="0.45" strokeWidth="0.75" fill="none" />
+      <line x1="2" y1="2.5" x2="11" y2="2.5" stroke="#c85a3a" strokeWidth="1.2" />
+      <path d="M2 2.5 C-0.5 6 0 11 2.5 13.5 C4 15 5.5 15.5 6.5 15.5" stroke="#c85a3a" strokeWidth="1.2" fill="none" />
+      <path d="M11 2.5 C13.5 6 13 11 10.5 13.5 C9 15 7.5 15.5 6.5 15.5" stroke="#c85a3a" strokeWidth="1.2" fill="none" />
+      <line x1="6.5" y1="15.5" x2="6.5" y2="18.5" stroke="#c85a3a" strokeWidth="0.9" />
+      <line x1="3" y1="18.5" x2="10" y2="18.5" stroke="#c85a3a" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
 type Tab = 'overview' | 'budget' | 'wines'
 
 const TAB_LABELS: Record<Tab, string> = {
@@ -141,31 +167,10 @@ export default function Page() {
           </nav>
 
           {/* Wine glasses — decorative, mobile only */}
-          <div className="md:hidden flex items-end gap-2 shrink-0" aria-hidden>
-            {([-11, 11] as const).map((deg, i) => (
-              <svg
-                key={i}
-                viewBox="0 0 20 28"
-                className="w-5 h-7"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ transform: `rotate(${deg}deg)`, transformOrigin: 'bottom center' }}
-              >
-                {/* Subtle wine fill */}
-                <path d="M4 2 C1 8 2 15 10 20 C18 15 19 8 16 2 Z" fill="#6b2737" fillOpacity="0.18" stroke="none" />
-                {/* Rim */}
-                <line x1="4" y1="2" x2="16" y2="2" stroke="#c85a3a" strokeWidth="1.4" />
-                {/* Left bowl */}
-                <path d="M4 2 C1 8 2 15 10 20" stroke="#c85a3a" strokeWidth="1.4" />
-                {/* Right bowl */}
-                <path d="M16 2 C19 8 18 15 10 20" stroke="#c85a3a" strokeWidth="1.4" />
-                {/* Stem */}
-                <line x1="10" y1="20" x2="10" y2="24" stroke="#c85a3a" strokeWidth="1.2" />
-                {/* Base */}
-                <line x1="5" y1="24" x2="15" y2="24" stroke="#c85a3a" strokeWidth="1.4" />
-              </svg>
-            ))}
+          <div className="md:hidden flex items-start shrink-0" aria-hidden>
+            <WineGlass />
+            <span className="text-terracotta text-[8px] animate-pulse" style={{ marginTop: '1px' }}>♥</span>
+            <WineGlass flip />
           </div>
           <div className="hidden md:block">
             <SyncStatus saving={saving} error={saveError} />
