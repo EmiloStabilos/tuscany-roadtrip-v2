@@ -1,19 +1,23 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+
 export default function SyncStatus({ saving, error }: { saving: boolean; error: string | null }) {
-  return (
-    <span
-      className="text-xs text-muted tabular-nums transition-opacity duration-300"
-      title={error ?? undefined}
-      role={error ? 'status' : undefined}
-    >
-      {saving ? (
-        <span className="opacity-60">Saving…</span>
-      ) : error ? (
-        <span className="text-terracotta">Save failed</span>
-      ) : (
-        <span className="opacity-40">Saved</span>
-      )}
-    </span>
-  )
+  const [showSaved, setShowSaved] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prevSaving = useRef(false)
+
+  useEffect(() => {
+    if (prevSaving.current && !saving && !error) {
+      setShowSaved(true)
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => setShowSaved(false), 2000)
+    }
+    prevSaving.current = saving
+  }, [saving, error])
+
+  if (saving) return <span className="text-xs text-muted opacity-60">Saving…</span>
+  if (error) return <span className="text-xs text-terracotta" title={error}>Save failed</span>
+  if (showSaved) return <span className="text-xs text-muted opacity-40">Saved</span>
+  return null
 }
