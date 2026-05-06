@@ -5,20 +5,29 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import dynamicImport from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
-import type { Stop, Expense } from '@/lib/supabase'
+import type { Stop, Expense, Wine } from '@/lib/supabase'
 import StopList from '@/components/StopList'
 import BudgetForm from '@/components/BudgetForm'
 import BudgetSummary from '@/components/BudgetSummary'
+import WineForm from '@/components/WineForm'
+import WineList from '@/components/WineList'
 import SyncStatus from '@/components/SyncStatus'
 
 const TripMap = dynamicImport(() => import('@/components/TripMap'), { ssr: false })
 
-type Tab = 'overview' | 'budget'
+type Tab = 'overview' | 'budget' | 'wines'
+
+const TAB_LABELS: Record<Tab, string> = {
+  overview: 'Trip Overview',
+  budget: 'Budget',
+  wines: 'Wine Journal',
+}
 
 export default function Page() {
   const [tab, setTab] = useState<Tab>('overview')
   const [stops, setStops] = useState<Stop[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
+  const [wines, setWines] = useState<Wine[]>([])
   const [budgetTotal, setBudgetTotal] = useState(5000)
   const [highlightedStopId, setHighlightedStopId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -29,10 +38,12 @@ export default function Page() {
       supabase.from('stops').select('*').order('position'),
       supabase.from('expenses').select('*').order('created_at'),
       supabase.from('config').select('budget_total').eq('id', 1).single(),
-    ]).then(([stopsRes, expensesRes, configRes]) => {
+      supabase.from('wines').select('*').order('created_at', { ascending: false }),
+    ]).then(([stopsRes, expensesRes, configRes, winesRes]) => {
       if (stopsRes.data) setStops(stopsRes.data as Stop[])
       if (expensesRes.data) setExpenses(expensesRes.data as Expense[])
       if (configRes.data) setBudgetTotal(configRes.data.budget_total)
+      if (winesRes.data) setWines(winesRes.data as Wine[])
     })
   }, [])
 
@@ -79,6 +90,20 @@ export default function Page() {
       setBudgetTotal(total)
     })
 
+  const addWine = (wine: Omit<Wine, 'id' | 'created_at'>) =>
+    withSave(async () => {
+      const { data, error } = await supabase.from('wines').insert(wine).select().single()
+      if (error) throw error
+      if (data) setWines((prev) => [data as Wine, ...prev])
+    })
+
+  const deleteWine = (id: string) =>
+    withSave(async () => {
+      const { error } = await supabase.from('wines').delete().eq('id', id)
+      if (error) throw error
+      setWines((prev) => prev.filter((w) => w.id !== id))
+    })
+
   return (
     <div className="min-h-screen bg-parchment text-ink font-sans">
       {/* ── Header ── */}
@@ -100,7 +125,7 @@ export default function Page() {
 
           {/* Desktop tabs */}
           <nav className="hidden md:flex items-center gap-8">
-            {(['overview', 'budget'] as Tab[]).map((t) => (
+            {(['overview', 'budget', 'wines'] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -110,7 +135,7 @@ export default function Page() {
                     : 'border-transparent text-muted hover:text-ink'
                 }`}
               >
-                {t === 'overview' ? 'Trip Overview' : 'Budget'}
+                {TAB_LABELS[t]}
               </button>
             ))}
           </nav>
@@ -136,9 +161,8 @@ export default function Page() {
 
       {/* ── Main content ── */}
       <main className="max-w-[1100px] mx-auto px-6 pb-28 md:pb-12">
-        {tab === 'overview' ? (
+        {tab === 'overview' && (
           <>
-            {/* Map */}
             <div
               className="mt-6 rounded-2xl overflow-hidden border border-warm-border shadow-sm"
               style={{ height: '55vh', minHeight: 320 }}
@@ -146,14 +170,13 @@ export default function Page() {
               <TripMap stops={stops} highlightedStopId={highlightedStopId} />
             </div>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-4 mt-3 mb-5 px-1">
               {[
-                { type: 'city',          label: 'Town / City',     color: '#c85a3a' },
-                { type: 'accommodation', label: 'Accommodation',   color: '#6b2737' },
-                { type: 'winery',        label: 'Winery',          color: '#8a5a8c' },
-                { type: 'sight',         label: 'Sight',           color: '#7a8c55' },
-                { type: 'beach',         label: 'Beach',           color: '#5a8a8c' },
+                { label: 'Town / City',   color: '#c85a3a' },
+                { label: 'Accommodation', color: '#6b2737' },
+                { label: 'Winery',        color: '#8a5a8c' },
+                { label: 'Sight',         color: '#7a8c55' },
+                { label: 'Beach',         color: '#5a8a8c' },
               ].map(({ label, color }) => (
                 <div key={label} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
@@ -162,7 +185,6 @@ export default function Page() {
               ))}
             </div>
 
-            {/* Stop list */}
             <StopList
               stops={stops}
               highlightedStopId={highlightedStopId}
@@ -170,7 +192,9 @@ export default function Page() {
               onDelete={deleteStop}
             />
           </>
-        ) : (
+        )}
+
+        {tab === 'budget' && (
           <div className="mt-8 grid md:grid-cols-2 gap-6">
             <BudgetForm onAdd={addExpense} />
             <BudgetSummary
@@ -181,20 +205,38 @@ export default function Page() {
             />
           </div>
         )}
+
+        {tab === 'wines' && (
+          <div className="mt-8">
+            <div className="mb-6">
+              <h2 className="font-playfair text-3xl font-bold text-ink">Wine Journal</h2>
+              <p className="text-muted text-sm mt-1">Every bottle worth remembering from Tuscany</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-card border border-warm-border rounded-2xl p-6 shadow-sm">
+                <h3 className="font-playfair text-xl font-semibold text-ink mb-5">Log a Wine</h3>
+                <WineForm onAdd={addWine} />
+              </div>
+              <div>
+                <WineList wines={wines} onDelete={deleteWine} />
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ── Mobile bottom tab bar ── */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-parchment/95 backdrop-blur-sm border-t border-warm-border">
         <div className="flex">
-          {(['overview', 'budget'] as Tab[]).map((t) => (
+          {(['overview', 'budget', 'wines'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-4 text-sm font-medium transition-colors ${
+              className={`flex-1 py-4 text-xs font-medium transition-colors ${
                 tab === t ? 'text-terracotta' : 'text-muted'
               }`}
             >
-              {t === 'overview' ? 'Trip Overview' : 'Budget'}
+              {TAB_LABELS[t]}
             </button>
           ))}
         </div>

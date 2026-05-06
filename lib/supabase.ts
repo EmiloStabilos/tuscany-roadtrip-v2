@@ -18,7 +18,17 @@ export type Stop = {
   created_at: string
 }
 
-export type Expense = {
+export type Wine = {
+  id: string
+  name: string
+  producer: string | null
+  type: 'red' | 'white' | 'rosé' | 'orange' | 'sparkling'
+  vintage: number | null
+  rating: number | null
+  notes: string | null
+  location: string | null
+  created_at: string
+}
   id: string
   category: 'lodging' | 'food' | 'wine' | 'transport' | 'activities' | 'misc'
   amount: number
