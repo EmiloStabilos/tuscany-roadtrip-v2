@@ -91,6 +91,11 @@ export default function Page() {
             <p className="text-muted text-[10px] tracking-[0.12em] uppercase mt-0.5">
               6 – 12 July 2026
             </p>
+            <p className="text-[10px] mt-0.5 tracking-wide">
+              <span className="text-terracotta font-medium">Emil</span>
+              <span className="text-terracotta mx-1">♥</span>
+              <span className="text-terracotta font-medium">Sarah</span>
+            </p>
           </div>
 
           {/* Desktop tabs */}

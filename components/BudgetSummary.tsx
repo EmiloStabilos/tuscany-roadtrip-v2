@@ -115,6 +115,7 @@ export default function BudgetSummary({ expenses, budgetTotal, onDelete, onUpdat
       {/* Expense list */}
       {orderedCategories.length === 0 ? (
         <div className="py-10 text-center">
+          <p className="text-terracotta text-lg mb-1">♥</p>
           <p className="text-muted text-sm">No expenses yet</p>
           <p className="text-muted/60 text-xs mt-1">Add your first expense on the left</p>
         </div>
