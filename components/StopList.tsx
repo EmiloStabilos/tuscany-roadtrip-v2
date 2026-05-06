@@ -37,7 +37,67 @@ function MapPinIcon() {
 type StopGroup = {
   dayLabel: string | null
   accommodation: Stop | null
-  subStops: Stop[]
+  before: Stop[]  // en-route stops arriving at accommodation
+  after: Stop[]   // day trips departing from accommodation
+}
+
+// Parse "Day 4 · Jul 9" → [4,4], "Days 5–6 · Jul 10–11" → [5,6]
+function dayRange(label: string | null): [number, number] {
+  if (!label) return [0, 0]
+  const single = label.match(/^Day (\d+)/)
+  if (single) { const d = parseInt(single[1]); return [d, d] }
+  const range = label.match(/^Days (\d+)[–\-](\d+)/)
+  if (range) return [parseInt(range[1]), parseInt(range[2])]
+  return [0, 0]
+}
+
+function dayFitsInAccommodation(stopLabel: string | null, accLabel: string | null) {
+  const [d] = dayRange(stopLabel)
+  const [s, e] = dayRange(accLabel)
+  return s > 0 && d >= s && d <= e
+}
+
+function buildGroups(stops: Stop[]): StopGroup[] {
+  const groups: StopGroup[] = []
+  let current: StopGroup | null = null
+
+  for (const stop of stops) {
+    if (stop.type === 'accommodation') {
+      // Any stops we were tentatively collecting as "after" the previous
+      // accommodation are actually en-route to this one — steal them back.
+      const stolen = current?.after ?? []
+      if (current) current.after = []
+
+      current = { dayLabel: stop.day_label, accommodation: stop, before: stolen, after: [] }
+      groups.push(current)
+    } else {
+      if (current) {
+        current.after.push(stop)
+      }
+      // Stops before the first accommodation are ignored (none in this itinerary)
+    }
+  }
+
+  // After the last accommodation, split trailing stops:
+  // those within the accommodation's day range are true day trips (stay in after),
+  // those outside form a standalone final group.
+  if (current && current.after.length > 0) {
+    const dayTrips: Stop[] = []
+    const standalone: Stop[] = []
+    for (const s of current.after) {
+      if (dayFitsInAccommodation(s.day_label, current.dayLabel)) {
+        dayTrips.push(s)
+      } else {
+        standalone.push(s)
+      }
+    }
+    current.after = dayTrips
+    if (standalone.length > 0) {
+      groups.push({ dayLabel: standalone[0].day_label, accommodation: null, before: standalone, after: [] })
+    }
+  }
+
+  return groups
 }
 
 function StopRow({
@@ -94,23 +154,7 @@ function StopRow({
 }
 
 export default function StopList({ stops, highlightedStopId, onHover, onDelete }: Props) {
-  // Group stops by accommodation base.
-  // Accumulate non-accommodation stops into a buffer; when an accommodation
-  // stop is reached, close the group with it as the header.
-  const groups: StopGroup[] = []
-  let buffer: Stop[] = []
-
-  for (const stop of stops) {
-    if (stop.type === 'accommodation') {
-      groups.push({ dayLabel: stop.day_label, accommodation: stop, subStops: buffer })
-      buffer = []
-    } else {
-      buffer.push(stop)
-    }
-  }
-  if (buffer.length > 0) {
-    groups.push({ dayLabel: buffer[0].day_label, accommodation: null, subStops: buffer })
-  }
+  const groups = buildGroups(stops)
 
   return (
     <div className="space-y-8">
@@ -126,32 +170,45 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete }
             </div>
           )}
 
-          {/* Accommodation — prominent card */}
-          {group.accommodation && (
-            <div className={`bg-card border border-warm-border rounded-2xl shadow-sm ${group.subStops.length > 0 ? 'mb-2' : ''}`}>
+          <div className="space-y-1">
+            {/* En-route stops — shown above accommodation */}
+            {group.before.map((stop) => (
               <StopRow
-                stop={group.accommodation}
-                highlighted={highlightedStopId === group.accommodation.id}
+                key={stop.id}
+                stop={stop}
+                highlighted={highlightedStopId === stop.id}
                 onHover={onHover}
                 onDelete={onDelete}
               />
-            </div>
-          )}
+            ))}
 
-          {/* Sub-stops — indented with connecting line */}
-          {group.subStops.length > 0 && (
-            <div className={`space-y-0.5 ${group.accommodation ? 'ml-5 pl-4 border-l-2 border-warm-border' : ''}`}>
-              {group.subStops.map((stop) => (
+            {/* Accommodation — prominent card */}
+            {group.accommodation && (
+              <div className="bg-card border border-warm-border rounded-2xl shadow-sm">
                 <StopRow
-                  key={stop.id}
-                  stop={stop}
-                  highlighted={highlightedStopId === stop.id}
+                  stop={group.accommodation}
+                  highlighted={highlightedStopId === group.accommodation.id}
                   onHover={onHover}
                   onDelete={onDelete}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            )}
+
+            {/* Day-trip stops — shown below accommodation, indented */}
+            {group.after.length > 0 && (
+              <div className="ml-5 pl-4 border-l-2 border-warm-border space-y-0.5 pt-0.5">
+                {group.after.map((stop) => (
+                  <StopRow
+                    key={stop.id}
+                    stop={stop}
+                    highlighted={highlightedStopId === stop.id}
+                    onHover={onHover}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
