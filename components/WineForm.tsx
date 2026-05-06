@@ -13,31 +13,62 @@ const TYPES: { id: WineType; label: string; color: string }[] = [
   { id: 'sparkling',label: 'Sparkling',color: '#7a8c55' },
 ]
 
+const RATING_LABEL: Record<number, string> = {
+  0.5: 'Poor', 1: 'Poor',
+  1.5: 'Fair', 2: 'Fair',
+  2.5: 'Good', 3: 'Good',
+  3.5: 'Great', 4: 'Great',
+  4.5: 'Outstanding', 5: 'Outstanding',
+}
+
 interface Props {
   onAdd: (wine: Omit<Wine, 'id' | 'created_at'>) => Promise<boolean>
 }
 
+function StarIcon({ fill }: { fill: 'full' | 'half' | 'empty' }) {
+  if (fill === 'full') return <span style={{ color: '#c85a3a' }}>★</span>
+  if (fill === 'empty') return <span style={{ color: '#e0d5c5' }}>★</span>
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', color: '#e0d5c5' }}>
+      ★
+      <span style={{ position: 'absolute', top: 0, left: 0, overflow: 'hidden', width: '50%', color: '#c85a3a' }}>★</span>
+    </span>
+  )
+}
+
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hovered, setHovered] = useState(0)
+
+  const getFill = (star: number, display: number): 'full' | 'half' | 'empty' => {
+    if (display >= star) return 'full'
+    if (display >= star - 0.5) return 'half'
+    return 'empty'
+  }
+
+  const resolveValue = (e: React.MouseEvent<HTMLButtonElement>, star: number) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return e.clientX - rect.left < rect.width / 2 ? star - 0.5 : star
+  }
+
+  const display = hovered || value
+
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           type="button"
-          onMouseEnter={() => setHovered(star)}
+          onMouseMove={(e) => setHovered(resolveValue(e, star))}
           onMouseLeave={() => setHovered(0)}
-          onClick={() => onChange(star)}
+          onClick={(e) => onChange(resolveValue(e, star))}
           className="text-2xl leading-none transition-transform hover:scale-110"
           aria-label={`${star} star${star > 1 ? 's' : ''}`}
         >
-          <span style={{ color: (hovered || value) >= star ? '#c85a3a' : '#e0d5c5' }}>★</span>
+          <StarIcon fill={getFill(star, display)} />
         </button>
       ))}
       {value > 0 && (
-        <span className="text-xs text-muted ml-1">
-          {['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding'][value]}
-        </span>
+        <span className="text-xs text-muted ml-1">{RATING_LABEL[value] ?? ''}</span>
       )}
     </div>
   )

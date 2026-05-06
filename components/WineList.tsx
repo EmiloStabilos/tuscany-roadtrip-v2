@@ -10,7 +10,13 @@ const TYPE_STYLES: Record<string, { color: string; label: string }> = {
   sparkling:{ color: '#7a8c55', label: 'Sparkling' },
 }
 
-const RATING_LABEL = ['', 'Poor', 'Fair', 'Good', 'Great', 'Outstanding']
+const RATING_LABEL: Record<number, string> = {
+  0.5: 'Poor', 1: 'Poor',
+  1.5: 'Fair', 2: 'Fair',
+  2.5: 'Good', 3: 'Good',
+  3.5: 'Great', 4: 'Great',
+  4.5: 'Outstanding', 5: 'Outstanding',
+}
 
 interface Props {
   wines: Wine[]
@@ -25,15 +31,25 @@ function XIcon() {
   )
 }
 
+function StarIcon({ fill }: { fill: 'full' | 'half' | 'empty' }) {
+  if (fill === 'full') return <span className="text-base leading-none" style={{ color: '#c85a3a' }}>★</span>
+  if (fill === 'empty') return <span className="text-base leading-none" style={{ color: '#e0d5c5' }}>★</span>
+  return (
+    <span className="text-base leading-none" style={{ position: 'relative', display: 'inline-block', color: '#e0d5c5' }}>
+      ★
+      <span style={{ position: 'absolute', top: 0, left: 0, overflow: 'hidden', width: '50%', color: '#c85a3a' }}>★</span>
+    </span>
+  )
+}
+
 function Stars({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} style={{ color: rating >= s ? '#c85a3a' : '#e0d5c5' }} className="text-base leading-none">
-          ★
-        </span>
-      ))}
-      <span className="text-[11px] text-muted ml-1.5">{RATING_LABEL[rating]}</span>
+      {[1, 2, 3, 4, 5].map((s) => {
+        const fill = rating >= s ? 'full' : rating >= s - 0.5 ? 'half' : 'empty'
+        return <StarIcon key={s} fill={fill} />
+      })}
+      <span className="text-[11px] text-muted ml-1.5">{RATING_LABEL[rating] ?? ''}</span>
     </div>
   )
 }
