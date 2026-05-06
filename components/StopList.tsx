@@ -87,6 +87,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
       lat: parseFloat(result.lat),
       lng: parseFloat(result.lon),
       google_maps_url: null,
+      day_label: null,
     })
     if (!saved) return
     setAdding(false)
@@ -100,51 +101,77 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
     setResults([])
   }
 
+  // Group consecutive stops with the same day_label
+  const groups: { label: string | null; stops: Stop[] }[] = []
+  for (const stop of stops) {
+    const last = groups[groups.length - 1]
+    if (last && last.label === stop.day_label) {
+      last.stops.push(stop)
+    } else {
+      groups.push({ label: stop.day_label ?? null, stops: [stop] })
+    }
+  }
+
   return (
-    <div className="space-y-1">
-      {stops.map((stop) => (
-        <div
-          key={stop.id}
-          onMouseEnter={() => onHover(stop.id)}
-          onMouseLeave={() => onHover(null)}
-          className={`group flex items-start gap-3 px-4 py-3 rounded-xl border transition-all duration-150 ${
-            highlightedStopId === stop.id
-              ? 'bg-card border-warm-border shadow-sm'
-              : 'border-transparent hover:bg-card hover:border-warm-border'
-          }`}
-        >
-          <div className="mt-[7px] shrink-0">
-            <div
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: TYPE_COLORS[stop.type] ?? '#c85a3a' }}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-playfair text-sm font-semibold text-ink leading-snug">{stop.name}</p>
-            {stop.note && (
-              <p className="text-muted text-xs mt-0.5 leading-relaxed">{stop.note}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-3 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-            {stop.google_maps_url && (
-              <a
-                href={stop.google_maps_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 -m-1.5 text-muted hover:text-olive transition-colors"
-                aria-label={`Open ${stop.name} in Google Maps`}
-                onClick={(e) => e.stopPropagation()}
+    <div className="space-y-6">
+      {groups.map((group, gi) => (
+        <div key={gi}>
+          {group.label && (
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-terracotta">
+                {group.label}
+              </span>
+              <div className="flex-1 h-px bg-warm-border" />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {group.stops.map((stop) => (
+              <div
+                key={stop.id}
+                onMouseEnter={() => onHover(stop.id)}
+                onMouseLeave={() => onHover(null)}
+                className={`group flex items-start gap-3 px-4 py-3 rounded-xl border transition-all duration-150 ${
+                  highlightedStopId === stop.id
+                    ? 'bg-card border-warm-border shadow-sm'
+                    : 'border-transparent hover:bg-card hover:border-warm-border'
+                }`}
               >
-                <MapPinIcon />
-              </a>
-            )}
-            <button
-              onClick={() => onDelete(stop.id)}
-              className="p-1.5 -m-1.5 text-muted hover:text-terracotta transition-colors"
-              aria-label={`Remove ${stop.name}`}
-            >
-              <XIcon />
-            </button>
+                <div className="mt-[7px] shrink-0">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: TYPE_COLORS[stop.type] ?? '#c85a3a' }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-playfair text-sm font-semibold text-ink leading-snug">{stop.name}</p>
+                  {stop.note && (
+                    <p className="text-muted text-xs mt-0.5 leading-relaxed">{stop.note}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  {stop.google_maps_url && (
+                    <a
+                      href={stop.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 -m-1.5 text-muted hover:text-olive transition-colors"
+                      aria-label={`Open ${stop.name} in Google Maps`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MapPinIcon />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => onDelete(stop.id)}
+                    className="p-1.5 -m-1.5 text-muted hover:text-terracotta transition-colors"
+                    aria-label={`Remove ${stop.name}`}
+                  >
+                    <XIcon />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ))}
@@ -197,7 +224,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete, 
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-warm-border text-muted hover:text-terracotta hover:border-terracotta transition-colors mt-1"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-warm-border text-muted hover:text-terracotta hover:border-terracotta transition-colors"
         >
           <PlusIcon />
           <span className="text-sm">Add a stop</span>

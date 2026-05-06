@@ -14,6 +14,7 @@ export type Stop = {
   lat: number
   lng: number
   google_maps_url: string | null
+  day_label: string | null
   created_at: string
 }
 
