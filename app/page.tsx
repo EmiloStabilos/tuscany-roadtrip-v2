@@ -115,15 +115,17 @@ export default function Page() {
             ))}
           </nav>
 
-          {/* Wine glasses — decorative, mobile only */}
-          <div className="md:hidden flex items-end gap-0.5 shrink-0" aria-hidden>
-            <svg width="18" height="26" viewBox="0 0 18 26" fill="none">
-              <path d="M4 1h10M3 1C3 1 1 6 1 9c0 3.5 2.5 5.5 5 6v7H4m10 0h-2.5m-5 0h7.5" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 8c1 2.5 3 4 7 4s6-1.5 7-4" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round"/>
+          {/* Clinking wine glasses — decorative, mobile only */}
+          <div className="md:hidden flex items-end gap-1 shrink-0" aria-hidden>
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#c85a3a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(-12deg)', transformOrigin: 'bottom center' }}>
+              <path d="M8 3h8c0 0 2 5 2 8 0 4-3 6-6 6s-6-2-6-6c0-3 2-8 2-8z"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+              <line x1="9" y1="21" x2="15" y2="21"/>
             </svg>
-            <svg width="18" height="26" viewBox="0 0 18 26" fill="none" style={{ transform: 'scaleX(-1)' }}>
-              <path d="M4 1h10M3 1C3 1 1 6 1 9c0 3.5 2.5 5.5 5 6v7H4m10 0h-2.5m-5 0h7.5" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 8c1 2.5 3 4 7 4s6-1.5 7-4" stroke="#c85a3a" strokeWidth="1.3" strokeLinecap="round"/>
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#c85a3a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ transform: 'rotate(12deg)', transformOrigin: 'bottom center' }}>
+              <path d="M8 3h8c0 0 2 5 2 8 0 4-3 6-6 6s-6-2-6-6c0-3 2-8 2-8z"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+              <line x1="9" y1="21" x2="15" y2="21"/>
             </svg>
           </div>
           <div className="hidden md:block">
