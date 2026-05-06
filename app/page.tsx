@@ -10,7 +10,6 @@ import StopList from '@/components/StopList'
 import BudgetForm from '@/components/BudgetForm'
 import BudgetSummary from '@/components/BudgetSummary'
 import SyncStatus from '@/components/SyncStatus'
-import EurConverter from '@/components/EurConverter'
 
 const TripMap = dynamicImport(() => import('@/components/TripMap'), { ssr: false })
 
@@ -173,10 +172,7 @@ export default function Page() {
           </>
         ) : (
           <div className="mt-8 grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <BudgetForm onAdd={addExpense} />
-              <EurConverter />
-            </div>
+            <BudgetForm onAdd={addExpense} />
             <BudgetSummary
               expenses={expenses}
               budgetTotal={budgetTotal}

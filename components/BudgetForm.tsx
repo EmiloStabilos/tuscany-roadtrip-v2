@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Expense } from '@/lib/supabase'
 
 type Category = Expense['category']
@@ -23,14 +23,27 @@ export default function BudgetForm({ onAdd }: Props) {
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
   const [loading, setLoading] = useState(false)
+  const [currency, setCurrency] = useState<'DKK' | 'EUR'>('DKK')
+  const [eurRate, setEurRate] = useState<number>(7.46)
+
+  useEffect(() => {
+    fetch('https://open.er-api.com/v6/latest/EUR')
+      .then((r) => r.json())
+      .then((data) => { if (data?.rates?.DKK) setEurRate(data.rates.DKK) })
+      .catch(() => {})
+  }, [])
+
+  const parsed = parseFloat(amount.replace(',', '.'))
+  const dkkAmount = !isNaN(parsed) && parsed > 0
+    ? (currency === 'EUR' ? parsed * eurRate : parsed)
+    : null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const parsed = parseFloat(amount)
-    if (!parsed || parsed <= 0) return
+    if (!dkkAmount) return
     setLoading(true)
     try {
-      const saved = await onAdd({ category, amount: parsed, note })
+      const saved = await onAdd({ category, amount: Math.round(dkkAmount * 100) / 100, note })
       if (saved) {
         setAmount('')
         setNote('')
@@ -69,18 +82,46 @@ export default function BudgetForm({ onAdd }: Props) {
         </div>
 
         <div>
-          <label className="block text-[11px] uppercase tracking-widest font-medium text-muted mb-1.5">
-            Amount (DKK)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full bg-parchment border border-warm-border rounded-xl px-4 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
-          />
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11px] uppercase tracking-widest font-medium text-muted">
+              Amount
+            </label>
+            <div className="flex items-center bg-parchment border border-warm-border rounded-lg overflow-hidden text-[11px] font-medium">
+              {(['DKK', 'EUR'] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { setCurrency(c); setAmount('') }}
+                  className={`px-2.5 py-1 transition-colors ${
+                    currency === c
+                      ? 'bg-terracotta text-white'
+                      : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted text-sm">
+              {currency === 'EUR' ? '€' : 'kr'}
+            </span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full bg-parchment border border-warm-border rounded-xl pl-9 pr-4 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
+            />
+          </div>
+          {currency === 'EUR' && dkkAmount !== null && (
+            <p className="text-[11px] text-muted mt-1.5">
+              ≈ {dkkAmount.toLocaleString('de-DE', { maximumFractionDigits: 0 })} DKK · 1 € = {eurRate.toFixed(2)} DKK
+            </p>
+          )}
         </div>
 
         <div>
