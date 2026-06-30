@@ -105,36 +105,42 @@ function StopRow({
   highlighted,
   onHover,
   onDelete,
+  delay = 0,
 }: {
   stop: Stop
   highlighted: boolean
   onHover: (id: string | null) => void
   onDelete: (id: string) => Promise<boolean>
+  delay?: number
 }) {
   return (
     <div
       onMouseEnter={() => onHover(stop.id)}
       onMouseLeave={() => onHover(null)}
-      className={`group flex items-start gap-3 px-4 py-3 rounded-xl border transition-all duration-150 ${
+      style={{ animationDelay: `${delay}ms` }}
+      className={`group flex items-start gap-3 px-4 py-3 rounded-xl border transition-all duration-200 ease-out animate-fade-in-up ${
         highlighted
-          ? 'bg-card border-warm-border shadow-sm'
-          : 'border-transparent hover:bg-card hover:border-warm-border'
+          ? 'bg-card border-warm-border shadow-sm -translate-y-px'
+          : 'border-transparent hover:bg-card hover:border-warm-border hover:-translate-y-px'
       }`}
     >
       <div className="mt-[7px] shrink-0">
-        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TYPE_COLORS[stop.type] ?? '#c85a3a' }} />
+        <div
+          className="w-2.5 h-2.5 rounded-full transition-transform duration-200"
+          style={{ backgroundColor: TYPE_COLORS[stop.type] ?? '#c85a3a', transform: highlighted ? 'scale(1.35)' : 'scale(1)' }}
+        />
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-playfair text-sm font-semibold text-ink leading-snug">{stop.name}</p>
         {stop.note && <p className="text-muted text-xs mt-0.5 leading-relaxed">{stop.note}</p>}
       </div>
-      <div className="flex items-center gap-3 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-3 mt-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
         {stop.google_maps_url && (
           <a
             href={stop.google_maps_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 -m-1.5 text-muted hover:text-olive transition-colors"
+            className="p-1.5 -m-1.5 text-muted hover:text-olive transition-all duration-150 hover:scale-110 active:scale-90"
             aria-label={`Open ${stop.name} in Google Maps`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -143,7 +149,7 @@ function StopRow({
         )}
         <button
           onClick={() => onDelete(stop.id)}
-          className="p-1.5 -m-1.5 text-muted hover:text-terracotta transition-colors"
+          className="p-1.5 -m-1.5 text-muted hover:text-terracotta transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer"
           aria-label={`Remove ${stop.name}`}
         >
           <XIcon />
@@ -155,11 +161,13 @@ function StopRow({
 
 export default function StopList({ stops, highlightedStopId, onHover, onDelete }: Props) {
   const groups = buildGroups(stops)
+  let stagger = 0
+  const nextDelay = () => Math.min(stagger++ * 35, 350)
 
   return (
     <div className="space-y-8">
       {groups.map((group, gi) => (
-        <div key={gi}>
+        <div key={gi} className="animate-fade-in-up" style={{ animationDelay: `${Math.min(gi * 60, 300)}ms` }}>
           {/* Day / period label */}
           {group.dayLabel && (
             <div className="flex items-center gap-3 mb-3">
@@ -179,12 +187,16 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete }
                 highlighted={highlightedStopId === stop.id}
                 onHover={onHover}
                 onDelete={onDelete}
+                delay={nextDelay()}
               />
             ))}
 
             {/* Accommodation — prominent card */}
             {group.accommodation && (
-              <div className="bg-card border border-warm-border rounded-2xl shadow-sm">
+              <div
+                className="bg-card border border-warm-border rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md animate-fade-in-up"
+                style={{ animationDelay: `${nextDelay()}ms` }}
+              >
                 <StopRow
                   stop={group.accommodation}
                   highlighted={highlightedStopId === group.accommodation.id}
@@ -204,6 +216,7 @@ export default function StopList({ stops, highlightedStopId, onHover, onDelete }
                     highlighted={highlightedStopId === stop.id}
                     onHover={onHover}
                     onDelete={onDelete}
+                    delay={nextDelay()}
                   />
                 ))}
               </div>

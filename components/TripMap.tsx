@@ -20,11 +20,13 @@ interface Props {
 
 export default function TripMap({ stops, highlightedStopId }: Props) {
   const [roadRoute, setRoadRoute] = useState<[number, number][]>([])
+  const [routeLoading, setRouteLoading] = useState(false)
 
   useEffect(() => {
     if (stops.length < 2) { setRoadRoute([]); return }
 
     const controller = new AbortController()
+    setRouteLoading(true)
     const coords = stops.map((s) => `${s.lng},${s.lat}`).join(';')
     fetch(
       `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
@@ -44,6 +46,7 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
         // fall back to straight lines if OSRM is unavailable
         setRoadRoute(stops.map((s) => [s.lat, s.lng]))
       })
+      .finally(() => setRouteLoading(false))
 
     return () => controller.abort()
   }, [stops])
@@ -52,7 +55,17 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
   const displayRoute = roadRoute.length > 0 ? roadRoute : fallbackRoute
 
   return (
-    <div className="w-full h-full" style={{ filter: 'sepia(12%) saturate(85%) brightness(1.01)' }}>
+    <div className="relative w-full h-full animate-fade-in">
+      {routeLoading && (
+        <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 text-[11px] font-medium text-muted bg-card/90 backdrop-blur-sm border border-warm-border rounded-full px-2.5 py-1 shadow-sm animate-pop-in">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="animate-spin text-terracotta">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.2" />
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+          Charting route…
+        </div>
+      )}
+      <div className="w-full h-full" style={{ filter: 'sepia(12%) saturate(85%) brightness(1.01)' }}>
       <MapContainer
         center={[43.2, 11.1]}
         zoom={8}
@@ -90,6 +103,7 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
                 color: 'white',
                 weight: highlighted ? 2.5 : 2,
                 fillOpacity: 1,
+                className: highlighted ? 'pulse-marker' : undefined,
               }}
             >
               <Tooltip direction="top" offset={[0, -6]}>
@@ -99,6 +113,7 @@ export default function TripMap({ stops, highlightedStopId }: Props) {
           )
         })}
       </MapContainer>
+      </div>
     </div>
   )
 }

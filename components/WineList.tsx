@@ -57,8 +57,8 @@ function Stars({ rating }: { rating: number }) {
 export default function WineList({ wines, onDelete }: Props) {
   if (wines.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <p className="text-4xl mb-3">🍷</p>
+      <div className="py-16 text-center animate-fade-in">
+        <p className="text-4xl mb-3 animate-pulse">🍷</p>
         <p className="font-playfair text-lg text-ink">No wines logged yet</p>
         <p className="text-muted text-sm mt-1">Your Tuscan tasting notes will appear here</p>
       </div>
@@ -67,12 +67,13 @@ export default function WineList({ wines, onDelete }: Props) {
 
   return (
     <div className="space-y-4">
-      {wines.map((wine) => {
+      {wines.map((wine, wi) => {
         const typeStyle = TYPE_STYLES[wine.type] ?? TYPE_STYLES.red
         return (
           <div
             key={wine.id}
-            className="group bg-card border border-warm-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
+            className="group bg-card border border-warm-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 animate-fade-in-up"
+            style={{ animationDelay: `${Math.min(wi * 60, 360)}ms` }}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3 min-w-0">
@@ -106,7 +107,7 @@ export default function WineList({ wines, onDelete }: Props) {
                 </span>
                 <button
                   onClick={() => onDelete(wine.id)}
-                  className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-1.5 -m-1.5 text-muted hover:text-terracotta"
+                  className="opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150 p-1.5 -m-1.5 text-muted hover:text-terracotta hover:scale-110 active:scale-90 cursor-pointer"
                   aria-label="Delete wine"
                 >
                   <XIcon />
@@ -142,7 +143,7 @@ export default function WineList({ wines, onDelete }: Props) {
                 href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([wine.name, wine.producer].filter(Boolean).join(' '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] font-medium text-muted hover:text-terracotta transition-colors"
+                className="text-[11px] font-medium text-muted hover:text-terracotta transition-all duration-150 hover:translate-x-0.5"
               >
                 Vivino ↗
               </a>
@@ -150,7 +151,7 @@ export default function WineList({ wines, onDelete }: Props) {
                 href={`https://www.wine-searcher.com/find/${encodeURIComponent([wine.name, wine.producer].filter(Boolean).join('+'))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] font-medium text-muted hover:text-terracotta transition-colors"
+                className="text-[11px] font-medium text-muted hover:text-terracotta transition-all duration-150 hover:translate-x-0.5"
               >
                 Wine Searcher ↗
               </a>

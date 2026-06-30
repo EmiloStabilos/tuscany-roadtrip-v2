@@ -66,7 +66,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
             const touch = e.changedTouches[0]
             onChange(resolveFromX(touch.clientX, e.currentTarget, star))
           }}
-          className="text-2xl leading-none transition-transform hover:scale-110"
+          className="text-2xl leading-none transition-transform duration-150 hover:scale-125 active:scale-95 cursor-pointer"
           aria-label={`${star} star${star > 1 ? 's' : ''}`}
         >
           <StarIcon fill={getFill(star, display)} />
@@ -130,8 +130,8 @@ export default function WineForm({ onAdd }: Props) {
               key={t.id}
               type="button"
               onClick={() => setType(t.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
-                type === t.id ? 'text-white border-transparent' : 'text-muted border-warm-border hover:border-ink hover:text-ink'
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 cursor-pointer active:scale-95 ${
+                type === t.id ? 'text-white border-transparent shadow-sm scale-105' : 'text-muted border-warm-border hover:border-ink hover:text-ink hover:-translate-y-0.5'
               }`}
               style={type === t.id ? { backgroundColor: t.color } : {}}
             >
@@ -152,7 +152,7 @@ export default function WineForm({ onAdd }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Brunello di Montalcino…"
-            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
+            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition-all duration-150 placeholder:text-muted"
           />
         </div>
         <div>
@@ -164,7 +164,7 @@ export default function WineForm({ onAdd }: Props) {
             value={producer}
             onChange={(e) => setProducer(e.target.value)}
             placeholder="Biondi-Santi…"
-            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
+            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition-all duration-150 placeholder:text-muted"
           />
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function WineForm({ onAdd }: Props) {
             placeholder="2021"
             min="1900"
             max="2026"
-            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
+            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition-all duration-150 placeholder:text-muted"
           />
         </div>
         <div>
@@ -194,7 +194,7 @@ export default function WineForm({ onAdd }: Props) {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Podere Terreno…"
-            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted"
+            className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition-all duration-150 placeholder:text-muted"
           />
         </div>
       </div>
@@ -217,15 +217,21 @@ export default function WineForm({ onAdd }: Props) {
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Dark cherries, tobacco, long finish…"
           rows={3}
-          className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta transition-colors placeholder:text-muted resize-none"
+          className="w-full bg-parchment border border-warm-border rounded-xl px-3 py-2.5 text-ink text-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition-all duration-150 placeholder:text-muted resize-none"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading || !name.trim() || rating === 0}
-        className="w-full bg-wine text-white rounded-xl py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-wine text-white rounded-xl py-2.5 text-sm font-medium hover:opacity-90 hover:shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
       >
+        {loading && (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className="animate-spin">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.3" />
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+        )}
         {loading ? 'Saving…' : 'Log Wine'}
       </button>
     </form>
